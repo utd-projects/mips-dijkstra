@@ -31,10 +31,11 @@ main:
 # {{{
 	# Find Shortest Path from A to every other vertex {{{
 		la	$a0,	adj_matrix
-		la	$a1,	verticies
+		lw	$a1,	verticies
 		lw	$a2,	A
 		jal	dijkstra
 	# Find Shortest Path from A to every other vertex }}}
+
 	# End Program {{{
 		j exit
 	# End Program }}}
@@ -46,106 +47,76 @@ dijkstra:
 	la	$s1,	is_shortest
 
 	# Set starting vertex to have a distance 0 {{{
-	addi	$sp,	$sp,	-4
-	sw	$ra,	($sp)
-	addi	$sp,	$sp,	-4
-	sw	$a0,	($sp)
-
-	move	$a0,	$s0
-	jal	init_starting_vertex
-
-	lw	$a0,	($sp)
-	addi	$sp,	$sp,	4
-	lw	$ra,	($sp)
-	addi	$sp,	$sp,	4
-	# Set starting vertex to have a distance 0 }}}
-
-	li	$s6,	0	# int i = $s6 = 0
-	lw	$t7,	verticies # $t7 = verticies
-	dijkstra_main_loop:
-	#  {{{
-		bge	$s6,	$t7,	end_dijkstra_main_loop # Check if we are are done with looping
-
-		# Return current minimum distance vertex {{{
-		addi	$sp,	$sp,	-4	# Put $ra into stack
+		addi	$sp,	$sp,	-4
 		sw	$ra,	($sp)
-		addi	$sp,	$sp,	-4	# Put matrix into stack
+		addi	$sp,	$sp,	-4
 		sw	$a0,	($sp)
-		addi	$sp,	$sp,	-4	# Put distance arr into stack
-		sw	$s1,	($sp)
-		addi	$sp,	$sp,	-4	# Put is_shortest arr into stack
-		sw	$s0,	($sp)
-
 
 		move	$a0,	$s0
-		move	$a1,	$s1
-		lw	$a2,	verticies
-		jal	set_minimum_distance
-		move	$s2,	$v0 # $s2 = Checker = $v0
+		# $a2 = Starting Vertex
+		jal	init_starting_vertex
 
-		lw	$s0,	($sp)
-		addi	$sp,	$sp,	4
-		lw	$s1,	($sp)
-		addi	$sp,	$sp,	4
 		lw	$a0,	($sp)
 		addi	$sp,	$sp,	4
 		lw	$ra,	($sp)
 		addi	$sp,	$sp,	4
+	# Set starting vertex to have a distance 0 }}}
+
+	li	$s3,	0	# int i = $s3 = 0
+	move	$s4,	$a1	# $s4 = $a1 = verticies
+	dijkstra_main_loop:
+	#  {{{
+		bge	$s3,	$s4,	end_dijkstra_main_loop # if $s3 < $s4, loop
+
+		# Return current minimum distance vertex {{{
+			addi	$sp,	$sp,	-4	# Push $ra into stack
+			sw	$ra,	($sp)
+			addi	$sp,	$sp,	-4	# Push matrix into stack
+			sw	$a0,	($sp)
+
+			move	$a0,	$s0	# $a0 = distance array
+			move	$a1,	$s1	# $a1 = is_shortest array
+			move	$a2,	$s4	# $a2 = $s4 = verticies
+			jal	set_minimum_distance
+			move	$s2,	$v0 # $s2 = current shortest vertex = $v0
+
+			lw	$a0,	($sp)
+			addi	$sp,	$sp,	4
+			lw	$ra,	($sp)
+			addi	$sp,	$sp,	4
 		# Return current minimum distance vertex }}}
 
 		# Update is_shortest for the new shortest vertex {{{
-		addi	$sp,	$sp,	-4	# Put $ra into stack
-		sw	$ra,	($sp)
-		addi	$sp,	$sp,	-4	# Put matrix into stack
-		sw	$a0,	($sp)
-		addi	$sp,	$sp,	-4	# Put distance arr into stack
-		sw	$s1,	($sp)
-		addi	$sp,	$sp,	-4	# Put is_shortest arr into stack
-		sw	$s0,	($sp)
+			addi	$sp,	$sp,	-4	# Put $ra into stack
+			sw	$ra,	($sp)
+			addi	$sp,	$sp,	-4	# Put matrix into stack
+			sw	$a0,	($sp)
 
-		move	$a0,	$s1
-		move	$a1,	$s2
-		jal	update_is_shortest
+			move	$a0,	$s1	# $a0 = is_shortest array
+			move	$a1,	$s2	# $a1 = current shortest vertex
+			jal	update_is_shortest
 
-		lw	$s0,	($sp)
-		addi	$sp,	$sp,	4
-		lw	$s1,	($sp)
-		addi	$sp,	$sp,	4
-		lw	$a0,	($sp)
-		addi	$sp,	$sp,	4
-		lw	$ra,	($sp)
-		addi	$sp,	$sp,	4
+			lw	$a0,	($sp)
+			addi	$sp,	$sp,	4
+			lw	$ra,	($sp)
+			addi	$sp,	$sp,	4
 		# Update is_shortest for the new shortest vertex  }}}
 
 		# Optimize Shortest Path {{{
-		addi	$sp,	$sp,	-4	# Put $ra into stack
-		sw	$ra,	($sp)
-		addi	$sp,	$sp,	-4	# Put matrix into stack
-		sw	$a0,	($sp)
-		addi	$sp,	$sp,	-4	# Put distance arr into stack
-		sw	$s1,	($sp)
-		addi	$sp,	$sp,	-4	# Put is_shortest arr into stack
-		sw	$s0,	($sp)
+			addi	$sp,	$sp,	-4	# Put $ra into stack
+			sw	$ra,	($sp)
 
-		la	$a0,	adj_matrix
-		la	$a1,	distance
-		la	$a2,	is_shortest
-		# move	$a1,	$s0
-		# move	$a2,	$s1
-		move	$a3,	$s2
-		jal	optimize_distance
+			# $a0 = adj_matrix
+			move	$a1,	$s0	# $a1 = distance array
+			move	$a2,	$s1	# $a2 = is_shortest array
+			move	$a3,	$s2	# $a3 = current shortest vertex
+			jal	optimize_distance
 
-		lw	$s0,	($sp)
-		addi	$sp,	$sp,	4
-		lw	$s1,	($sp)
-		addi	$sp,	$sp,	4
-		lw	$a0,	($sp)
-		addi	$sp,	$sp,	4
-		lw	$ra,	($sp)
-		addi	$sp,	$sp,	4
+			lw	$ra,	($sp)
+			addi	$sp,	$sp,	4
 		# Optimize Shortest Path }}}
 
-		addi	$s6,	$s6,	1
+		addi	$s3,	$s3,	1
 		j	dijkstra_main_loop
 	#  }}}
 
@@ -156,18 +127,10 @@ dijkstra:
 		sw	$ra,	($sp)
 		addi	$sp,	$sp,	-4	# Put matrix into stack
 		sw	$a0,	($sp)
-		addi	$sp,	$sp,	-4	# Put is_shortest arr into stack
-		sw	$s0,	($sp)
 
 		move	$a0,	$s0
 		jal	print_array
 
-		li	$a0,	'\n'	# Store a new line character into $a0
-		li	$v0,	11	# List immediate to print a character
-		syscall
-
-		lw	$s0,	($sp)
-		addi	$sp,	$sp,	4
 		lw	$a0,	($sp)
 		addi	$sp,	$sp,	4
 		lw	$ra,	($sp)
@@ -198,17 +161,17 @@ set_minimum_distance_loop:
 	bge	$t1,	$a2,	end_set_minimum_distance
 
 	# if (*(found_path+i) == false && *(distance+i) <= min_value) {{{
-	sll	$t2,	$t1,	2	# Anchor pointer to element we want
-	add	$t2,	$a1,	$t2	# Set $t2 to address of is_shortest[i]
-	lw	$t3,	0($t2)	# $t3 = is_shortest[i]
-	seq	$t4,	$t3,	$zero	# Set $t4 to true if is_shortest[i] = false
-	beq	$t4,	$zero,	increment_set_minimum_distance_loop # Skip if $t4 is false
+		sll	$t2,	$t1,	2	# Anchor pointer to element we want
+		add	$t2,	$a1,	$t2	# Set $t2 to address of is_shortest[i]
+		lw	$t3,	0($t2)	# $t3 = is_shortest[i]
+		seq	$t4,	$t3,	$zero	# Set $t4 to true if is_shortest[i] = false
+		beq	$t4,	$zero,	increment_set_minimum_distance_loop # Skip if $t4 is false
 
-	sll	$t2,	$t1,	2	# Anchor pointer to element we want
-	add	$t2,	$a0,	$t2	# Set $t2 to address of distance[i]
-	lw	$t3,	0($t2)	# $t3 = distance[i]
-	sle	$t4,	$t3,	$t0 # Set $t4 to 1 if distance[i] <= $t0
-	beq	$t4,	$zero,	increment_set_minimum_distance_loop # Skip if $t4 is false
+		sll	$t2,	$t1,	2	# Anchor pointer to element we want
+		add	$t2,	$a0,	$t2	# Set $t2 to address of distance[i]
+		lw	$t3,	0($t2)	# $t3 = distance[i]
+		sle	$t4,	$t3,	$t0 # Set $t4 to 1 if distance[i] <= $t0
+		beq	$t4,	$zero,	increment_set_minimum_distance_loop # Skip if $t4 is false
 	#  }}}
 	move	$t0,	$t3 # min_value = *(distance + i);
 	move	$v0,	$t1 # min_index = i;
@@ -237,7 +200,7 @@ update_is_shortest:	# Update is_shortest array for new shortest vertex
 optimize_distance:	# Update distance array values
 #  {{{
 	li	$t0,	0	# int j = $t0 = 0
-	lw	$t1,	verticies
+	move	$t1,	$s4	# $s1 = $s4 = verticies
 optimize_distance_loop:
 	bge	$t0,	$t1,	end_optimize_distance
 
@@ -265,6 +228,7 @@ optimize_distance_loop:
 		sll	$t2,	$t0,	2	# Anchor pointer to distance[j]
 		add	$t2,	$a1,	$t2
 		lw	$t6,	0($t2)		# $t7 = distance[j]
+
 		# Branch if distance[j] < distance[checker] + graph[verticies*checker +j]
 		blt	$t6,	$t5,	increment_optimize_distance
 
