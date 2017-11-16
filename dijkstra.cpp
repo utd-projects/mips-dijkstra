@@ -1,8 +1,9 @@
 #include <iostream>
+#include <stack>
 
-using namespace std;
-int set_minimum_distance(const int, const int*, const bool*);
-void dijkstra(const int, const int*, const int);
+int set_minimum_distance(int, const int* const, const bool* const);
+void dijkstra(int, const int* const, int);
+void print_path(const int* const, const int);
 
 int main()
 {
@@ -19,7 +20,7 @@ int main()
         */
 
         //Matrix Representation of Graph
-        int* matrix_graph = new int[verticies*verticies] {
+        auto matrix_graph = new int[verticies*verticies] {
             0,3,5,9,0,0,
             3,0,3,4,7,0,
             5,3,0,2,6,0,
@@ -27,10 +28,12 @@ int main()
             0,7,6,2,0,5,
             0,0,0,2,5,0
         };
-        dijkstra(verticies, matrix_graph, 0);
+        for (int i = 0; i < 6; ++i) {
+            dijkstra(verticies, matrix_graph, i);
+        }
         delete [] matrix_graph;
     } catch (...) {
-        cout << "an error has occurred in the main function. \n\n";
+        std::cout << "an error has occurred in the main function. \n\n";
         return -1;
     }
 
@@ -38,7 +41,7 @@ int main()
 }
 
 //Determine from the remaining vertices which has the smallest weight
-int set_minimum_distance(const int verticies, const int* distance, const bool* found_path)
+int set_minimum_distance(const int verticies, const int* const distance, const bool* const found_path)
 {
     int min_value = INT_MAX;
     int min_index = 0;
@@ -52,15 +55,17 @@ int set_minimum_distance(const int verticies, const int* distance, const bool* f
     return min_index;
 }
 
-void dijkstra(const int verticies, const int* graph, const int start)
+void dijkstra(const int verticies, const int* const graph, const int start)
 {
     int* distance = new int[verticies];
     bool* found_shortest_path = new bool[verticies];
+    int* path = new int[verticies];
 
     //Initilize the default values
     for (int i = 0; i < verticies; ++i) {
         *(distance + i) = INT_MAX;
         *(found_shortest_path + i) = false;
+        *(path + i) = -1;
     }
 
     //Starting value path is always 0
@@ -68,6 +73,7 @@ void dijkstra(const int verticies, const int* graph, const int start)
 
     for (int i = 0; i < verticies; ++i) {
         int checker = set_minimum_distance(verticies, distance, found_shortest_path);
+        // std::cout << checker << std::endl;
         *(found_shortest_path + checker) = true;
 
         //If there is a better path, change it to that weight.
@@ -78,15 +84,37 @@ void dijkstra(const int verticies, const int* graph, const int start)
                 && *(distance+checker)+(*(graph + (verticies*checker + j))) < *(distance + j)) {
 
                 *(distance + j) = *(distance + checker) + *(graph + (verticies*checker + j));
+                *(path + j) = checker;
             }
         }
     }
     delete [] found_shortest_path;
 
-    for (int i = 0; i < verticies; ++i) {
-        cout << "Shortest Path from vertex " << (char)(start+65) << " to "
-            << (char)(i+65) << " is: " << *(distance+i) << endl;
+    std::cout << "Shortest Distance from " << char(start+65) << ":\n";
+    std::cout << "A B C D E F" << std::endl;
+    for (int j = 0; j < verticies; ++j) {
+        // cout << "Shortest Path from vertex " << (char)(start+65) << " to "
+        //     << (char)(j+65) << " is: " << *(distance+j) << endl;
+        // std::cout << *(distance + j) << std::endl;
+        std::cout << *(distance + j) << " ";
     }
+    std::cout << "\nPath:" <<  std::endl;
+    for (int i = 0; i < verticies; ++i) {
+        print_path(path, i);
+    }
+    delete [] path;
+    std::cout << std::endl;
     delete [] distance;
+}
 
+void print_path(const int* const path, const int end_vertex) {
+    std::stack<int> temp;
+    for (int i = end_vertex; i != -1; i = *(path + i)) {
+        temp.push(i);
+    }
+    while ( temp.size() != 1) {
+        std::cout << static_cast<char>(temp.top() + 65) << " -> ";
+        temp.pop();
+    }
+    std::cout << static_cast<char>(temp.top() + 65) << std::endl;
 }
