@@ -9,7 +9,7 @@ int main()
 {
     try {
 
-        const int verticies = 6;
+        const int vertices = 6;
         /*
             A(ASCII 65) = 0
             B(ASCII 66) = 1
@@ -20,7 +20,7 @@ int main()
         */
 
         //Matrix Representation of Graph
-        auto matrix_graph = new int[verticies*verticies] {
+        auto matrix_graph = new int[vertices*vertices] {
             0,3,5,9,0,0,
             3,0,3,4,7,0,
             5,3,0,2,6,0,
@@ -29,7 +29,7 @@ int main()
             0,0,0,2,5,0
         };
         for (int i = 0; i < 6; ++i) {
-            dijkstra(verticies, matrix_graph, i);
+            dijkstra(vertices, matrix_graph, i);
         }
         delete [] matrix_graph;
     } catch (...) {
@@ -41,12 +41,12 @@ int main()
 }
 
 //Determine from the remaining vertices which has the smallest weight
-int set_minimum_distance(const int verticies, const int* const distance, const bool* const found_path)
+int set_minimum_distance(const int vertices, const int* const distance, const bool* const found_path)
 {
     int min_value = INT_MAX;
     int min_index = 0;
 
-    for (int i = 0; i < verticies; ++i) {
+    for (int i = 0; i < vertices; ++i) {
         if (*(found_path+i) == false && *(distance+i) <= min_value) {
             min_value = *(distance + i);
             min_index = i;
@@ -55,14 +55,14 @@ int set_minimum_distance(const int verticies, const int* const distance, const b
     return min_index;
 }
 
-void dijkstra(const int verticies, const int* const graph, const int start)
+void dijkstra(const int vertices, const int* const graph, const int start)
 {
-    int* distance = new int[verticies];
-    bool* found_shortest_path = new bool[verticies];
-    int* path = new int[verticies];
+    int* distance = new int[vertices];
+    bool* found_shortest_path = new bool[vertices];
+    int* path = new int[vertices];
 
     //Initilize the default values
-    for (int i = 0; i < verticies; ++i) {
+    for (int i = 0; i < vertices; ++i) {
         *(distance + i) = INT_MAX;
         *(found_shortest_path + i) = false;
         *(path + i) = -1;
@@ -71,19 +71,19 @@ void dijkstra(const int verticies, const int* const graph, const int start)
     //Starting value path is always 0
     *(distance + start) = 0;
 
-    for (int i = 0; i < verticies; ++i) {
-        int checker = set_minimum_distance(verticies, distance, found_shortest_path);
+    for (int i = 0; i < vertices; ++i) {
+        int checker = set_minimum_distance(vertices, distance, found_shortest_path);
         // std::cout << checker << std::endl;
         *(found_shortest_path + checker) = true;
 
         //If there is a better path, change it to that weight.
-        for (int j = 0; j < verticies; j++) {
+        for (int j = 0; j < vertices; j++) {
             if (*(found_shortest_path+j) == false
-                && *(graph + (verticies*checker + j)) != 0
+                && *(graph + (vertices*checker + j)) != 0
                 && *(distance + checker) != INT_MAX
-                && *(distance+checker)+(*(graph + (verticies*checker + j))) < *(distance + j)) {
+                && *(distance+checker)+(*(graph + (vertices*checker + j))) < *(distance + j)) {
 
-                *(distance + j) = *(distance + checker) + *(graph + (verticies*checker + j));
+                *(distance + j) = *(distance + checker) + *(graph + (vertices*checker + j));
                 *(path + j) = checker;
             }
         }
@@ -92,14 +92,14 @@ void dijkstra(const int verticies, const int* const graph, const int start)
 
     std::cout << "Shortest Distance from " << char(start+65) << ":\n";
     std::cout << "A B C D E F" << std::endl;
-    for (int j = 0; j < verticies; ++j) {
+    for (int j = 0; j < vertices; ++j) {
         // cout << "Shortest Path from vertex " << (char)(start+65) << " to "
         //     << (char)(j+65) << " is: " << *(distance+j) << endl;
         // std::cout << *(distance + j) << std::endl;
         std::cout << *(distance + j) << " ";
     }
     std::cout << "\nPath:" <<  std::endl;
-    for (int i = 0; i < verticies; ++i) {
+    for (int i = 0; i < vertices; ++i) {
         print_path(path, i);
     }
     delete [] path;
