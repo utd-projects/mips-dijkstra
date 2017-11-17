@@ -15,6 +15,7 @@ adj_matrix:	.word	0,3,5,9,0,0,
 distance:	.word	2147483647:6 # Initilize size 6 array where every element equals INT_MAX
 is_shortest:	.word	0:6 # Initilze size 6 array where every element is false
 verticies:	.word	6
+path:           .word   0:6
 
 A:	.word	0
 B:	.word	1
@@ -100,13 +101,14 @@ dijkstra:
 			addi	$sp,	$sp,	4
 			lw	$ra,	($sp)
 			addi	$sp,	$sp,	4
+			move    $s5,    $a0
 		# Update is_shortest for the new shortest vertex  }}}
 
 		# Optimize Shortest Path {{{
 			addi	$sp,	$sp,	-4	# Put $ra into stack
 			sw	$ra,	($sp)
 
-			# $a0 = adj_matrix
+			move    $a0,    $s5	# $a0 = adj_matrix
 			move	$a1,	$s0	# $a1 = distance array
 			move	$a2,	$s1	# $a2 = is_shortest array
 			move	$a3,	$s2	# $a3 = current shortest vertex
@@ -115,6 +117,18 @@ dijkstra:
 			lw	$ra,	($sp)
 			addi	$sp,	$sp,	4
 		# Optimize Shortest Path }}}
+		
+		# Print Path Array {{{
+			addi	$sp,	$sp,	-4	# Put $ra into stack
+			sw	$ra,	($sp)
+
+			# $a0 = adj_matrix
+			move	$a0,	$s5	# $a1 = distance array
+			jal	print_path
+
+			lw	$ra,	($sp)
+			addi	$sp,	$sp,	4
+		# Print Path Array }}}
 
 		addi	$s3,	$s3,	1
 		j	dijkstra_main_loop
@@ -123,13 +137,14 @@ dijkstra:
 	end_dijkstra_main_loop:
 
 		# Print Distance Array {{{
+		move    $a0,    $s5
 		addi	$sp,	$sp,	-4	# Put $ra into stack
 		sw	$ra,	($sp)
 		addi	$sp,	$sp,	-4	# Put matrix into stack
 		sw	$a0,	($sp)
 
 		move	$a0,	$s0
-		jal	print_array
+		jal	print_path
 
 		lw	$a0,	($sp)
 		addi	$sp,	$sp,	4
@@ -153,6 +168,7 @@ init_starting_vertex:	# Sets the starting vertex to have a distance 0
 
 set_minimum_distance:	# Find next shortest vertex
 #  {{{
+	move    $t7,    $a0
 	li	$t0,	2147483647 # $t0 = min_value (initilized to INT_MAX)
 	li	$v0,	0	# $v0 = min_index
 
@@ -168,7 +184,7 @@ set_minimum_distance_loop:
 		beq	$t4,	$zero,	increment_set_minimum_distance_loop # Skip if $t4 is false
 
 		sll	$t2,	$t1,	2	# Anchor pointer to element we want
-		add	$t2,	$a0,	$t2	# Set $t2 to address of distance[i]
+		add	$t2,	$t7,	$t2	# Set $t2 to address of distance[i]
 		lw	$t3,	0($t2)	# $t3 = distance[i]
 		sle	$t4,	$t3,	$t0 # Set $t4 to 1 if distance[i] <= $t0
 		beq	$t4,	$zero,	increment_set_minimum_distance_loop # Skip if $t4 is false
@@ -197,16 +213,26 @@ update_is_shortest:	# Update is_shortest array for new shortest vertex
 	jr	$ra
 #  }}}
 
+# Input:
+# $a0: graph
+# $a1: distance
+# $a2: is_shortest array
+# $a3: checker
 optimize_distance:	# Update distance array values
 #  {{{
 	li	$t0,	0	# int j = $t0 = 0
 	move	$t1,	$s4	# $s1 = $s4 = verticies
+	move    $t7,    $a0
 optimize_distance_loop:
 	bge	$t0,	$t1,	end_optimize_distance
+	la      $t8,    path
 
 	# Find Shorter Distance {{{
 		sll	$t2,	$t0,	2	# Anchor pointer to element we want
+		add     $t9,    $t8,    $t2
 		add	$t2,	$a2,	$t2	# Set $t2 to address of is_shortest[j]
+		add     $t9,    $t9,    $a3
+		
 		lw	$t3,	0($t2)	# $t3 = is_shortest[j]
 		bnez	$t3	increment_optimize_distance # Skip if $t3 is true
 
@@ -219,7 +245,7 @@ optimize_distance_loop:
 		mul	$t4,	$t1,	$a3 # Anchor $t2 = verticies*checker + j
 		add	$t4,	$t4,	$t0
 		sll	$t2,	$t4,	2
-		add	$t2,	$a0,	$t2
+		add	$t2,	$t7,	$t2
 		lw	$t4,	0($t2)		# $t4 = *(graph + (verticies*checker + j))
 		beqz	$t4,	increment_optimize_distance # Skip if $t4 == 0
 
@@ -241,6 +267,7 @@ increment_optimize_distance:
 	j	optimize_distance_loop
 
 end_optimize_distance:
+	sw      $t8,    path
 	jr	$ra
 #  }}}
 
@@ -248,19 +275,26 @@ print_array:
 #  {{{
 	li	$t0,	0	# i = $t0 = 0
 	lw	$t1,	verticies
+	move    $t7,    $a0
 loop_print_array:
 	bge	$t0,	$t1,	end_print_array # Check if we are are done with looping
 	sll	$t2,	$t0,	2	# $t0 is pointer to element we want
-	add	$t2,	$a0,	$t2	# Get pointer to element we want
+	add	$t2,	$t7,	$t2	# Get pointer to element we want
 
 	addi	$sp,	$sp,	-4
-	sw	$a0,	($sp)
-
+	sw	$t7,	($sp)
+	
+	addi    $a0,    $t0,    65
+	li      $v0,    11
+	syscall
+	li      $a0,    ':'
+	li      $v0,    11
+	syscall
+			
 	lw	$a0,	0($t2)	# $t1 = distance[starting vertex]
 	li	$v0,	1
 	syscall
-
-	li	$a0,	'\n'	# Store a new line character into $a0
+	li	$a0,	' '	
 	li	$v0,	11	# List immediate to print a character
 	syscall
 
@@ -273,6 +307,24 @@ loop_print_array:
 end_print_array:
 	jr	$ra
 #  }}}
+
+print_path:
+# {{{
+	lw      $t8,    path
+	li      $t0,    0
+	li      $t3,    6
+loop_print_path:
+        bge     $t0,    $t3,    end_print_path
+        sll     $t2,    $t0,    2
+        add     $t2,    $t8,    $t2
+        lw      $a0,    0($t2)
+        li      $v0,    1
+        syscall
+        addi    $t0,    $t0,    1
+        j       loop_print_path
+end_print_path:
+        jr      $ra
+# }}}
 
 exit:
 # {{{
