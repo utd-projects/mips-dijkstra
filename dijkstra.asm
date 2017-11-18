@@ -229,9 +229,9 @@ optimize_distance_loop:
 
 	# Find Shorter Distance {{{
 		sll	$t2,	$t0,	2	# Anchor pointer to element we want
-		add     $t9,    $t8,    $t2
+		
 		add	$t2,	$a2,	$t2	# Set $t2 to address of is_shortest[j]
-		add     $t9,    $t9,    $a3
+		
 		
 		lw	$t3,	0($t2)	# $t3 = is_shortest[j]
 		bnez	$t3	increment_optimize_distance # Skip if $t3 is true
