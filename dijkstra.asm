@@ -21,19 +21,32 @@ path:		.word	-1:6 # Initilize size 6 array where every element equals -1
 path_msg:		.asciiz	"\nPath:\n"
 next_vertex_msg:	.asciiz 	" > "
 
-
-# A:	.word	0
-# B:	.word	1
-# C:	.word	2
-# D:	.word	3
-# E:	.word	4
-# F:	.word	5
-starting_vertex:	.word	5 # Change this number (0-5) to see path from startin to every other vertex
+print_vertices_options:	.asciiz "A=0 B=1 C=2 D=3 E=4 F=5\n"
+in_starting_vertex:	.asciiz "What is the starting vertex (0-5)? "
+starting_vertex:	.word	0 # A=0, B=1, C=2, D=3, E=4, F=5
 
 # }}}
 
 	.text # {{{
 main: # {{{
+	# Ask user for starting vertex {{{
+		# Print Vertex Options {{{
+			la	$a0,	print_vertices_options
+			jal	print_string
+		# Print Vertex Options }}}
+
+		# Print Message asking for starting vertex {{{
+			la	$a0,	in_starting_vertex
+			jal	print_string
+		# Print Message asking for starting vertex }}}
+
+		# Get Starting Vertex {{{
+			lw	$a0,	starting_vertex
+			jal	get_int
+			sw	$v0,	starting_vertex
+		# Get Starting Vertex }}}
+	# Ask user for starting vertex }}}
+
 	# Find Shortest Path from starting vertex to every other vertex {{{
 		la	$a0,	adj_matrix
 		lw	$a1,	vertices
@@ -279,100 +292,120 @@ end_optimize_distance:
 	jr	$ra
 #  }}}
 
-print_array: #  {{{
-	li	$t0,	0	# i = $t0 = 0
-	move	$t1,	$s4	# $t1 = vertices
-
-	loop_print_array: #  {{{
-
-	bge	$t0,	$t1,	end_print_array # Check if we are are done with looping
-	sll	$t2,	$t0,	2	# $t0 is pointer to element we want
-	add	$t2,	$a0,	$t2	# Get pointer to element we want
-
-	addi	$sp,	$sp,	-4
-	sw	$a0,	($sp)
-
-	lw	$a0,	0($t2)	# $t1 = distance[starting vertex]
-	li	$v0,	1
-	syscall
-
-	li	$a0,	' '	# Store a new line character into $a0
-	li	$v0,	11	# List immediate to print a character
-	syscall
-
-	lw	$a0,	($sp)
-	addi	$sp,	$sp,	4
-
-	addi	$t0,	$t0,	1
-	j	loop_print_array
-
-	end_print_array:
-
-	addi	$sp,	$sp,	-4
-	sw	$a0,	($sp)
-
-	li	$a0,	'\n'
-	li	$v0,	11
-	syscall
-
-	lw	$a0,	($sp)
-	addi	$sp,	$sp,	4
+# Print Functions {{{
+	print_string: #  {{{
+		li	$v0,	4	# Load Immediate for reading strings
+		syscall
+		jr	$ra	# Return back to where it was called
 	#  }}}
 
-	jr	$ra
-#  }}}
+	print_int: #  {{{
+		li	$v0,	1
+		syscall
+		jr	$ra	# Return back to where it was called
+	#  }}}
 
-print_path: # {{{
+	print_array: #  {{{
+		li	$t0,	0	# i = $t0 = 0
+		move	$t1,	$s4	# $t1 = vertices
 
-	move	$t0,	$a2	# $t0 =  i = $a2 = End Vertex
-	li	$t1,	0	# Stack pushing counter
-	store_path_loop: #  {{{
-		beq	$t0,	-1, end_store_path_loop # Loop until we add starting vertex to stack
+		loop_print_array: #  {{{
+
+		bge	$t0,	$t1,	end_print_array # Check if we are are done with looping
+		sll	$t2,	$t0,	2	# $t0 is pointer to element we want
+		add	$t2,	$a0,	$t2	# Get pointer to element we want
 
 		addi	$sp,	$sp,	-4
-		sw	$t0,	($sp) # Put the current vertex
-		addi	$t1,	$t1,	1	# Add 1 to stack pushing counter
+		sw	$a0,	($sp)
 
-		sll	$t2,	$t0,	2	# Anchor pointer to path[i]
-		add	$t2,	$a1,	$t2
-		lw	$t3,	($t2)
-		move	$t0,	$t3	# $t0 = path[i]
-
-		j	store_path_loop
-	end_store_path_loop:
-	#  }}}
-
-	print_vertices_loop: # {{{
-		ble	$t1,	1,	print_end_vertex
-
-		lw	$a0,	($sp)	# $a0 = stack.top()
-		addi	$a0,	$a0,	'A'	# Set $a0 to proper vertex char
-		li	$v0,	11	# Print vertex
+		lw	$a0,	0($t2)	# $t1 = distance[starting vertex]
+		li	$v0,	1
 		syscall
 
-		la	$a0,	next_vertex_msg # $a0 = " > "
-		li	$v0,	4	# Load Immediate to print string
-		syscall # Print next vertex string indicator
+		li	$a0,	' '	# Store a new line character into $a0
+		li	$v0,	11	# List immediate to print a character
+		syscall
 
-		addi	$sp,	$sp,	4	# Pop stack to next vertex
-		addi	$t1,	$t1,	-1	# Decrement counter
-
-		j	print_vertices_loop
-
-	print_end_vertex:
 		lw	$a0,	($sp)
-		addi	$a0,	$a0,	'A'
+		addi	$sp,	$sp,	4
+
+		addi	$t0,	$t0,	1
+		j	loop_print_array
+
+		end_print_array:
+
+		addi	$sp,	$sp,	-4
+		sw	$a0,	($sp)
+
+		li	$a0,	'\n'
 		li	$v0,	11
 		syscall
+
+		lw	$a0,	($sp)
+		addi	$sp,	$sp,	4
+		#  }}}
+
+		jr	$ra
+	#  }}}
+
+	print_path: # {{{
+
+		move	$t0,	$a2	# $t0 =  i = $a2 = End Vertex
+		li	$t1,	0	# Stack pushing counter
+		store_path_loop: #  {{{
+			beq	$t0,	-1, end_store_path_loop # Loop until we add starting vertex to stack
+
+			addi	$sp,	$sp,	-4
+			sw	$t0,	($sp) # Put the current vertex
+			addi	$t1,	$t1,	1	# Add 1 to stack pushing counter
+
+			sll	$t2,	$t0,	2	# Anchor pointer to path[i]
+			add	$t2,	$a1,	$t2
+			lw	$t3,	($t2)
+			move	$t0,	$t3	# $t0 = path[i]
+
+			j	store_path_loop
+		end_store_path_loop:
+		#  }}}
+
+		print_vertices_loop: # {{{
+			ble	$t1,	1,	print_end_vertex
+
+			lw	$a0,	($sp)	# $a0 = stack.top()
+			addi	$a0,	$a0,	'A'	# Set $a0 to proper vertex char
+			li	$v0,	11	# Print vertex
+			syscall
+
+			la	$a0,	next_vertex_msg # $a0 = " > "
+			li	$v0,	4	# Load Immediate to print string
+			syscall # Print next vertex string indicator
+
+			addi	$sp,	$sp,	4	# Pop stack to next vertex
+			addi	$t1,	$t1,	-1	# Decrement counter
+
+			j	print_vertices_loop
+
+		print_end_vertex:
+			lw	$a0,	($sp)
+			addi	$a0,	$a0,	'A'
+			li	$v0,	11
+			syscall
+		# }}}
+
+		li	$a0,	'\n'	# Store a new line character into $a0
+		li	$v0,	11	# Load immediate to print character
+		syscall
+
+		addi	$sp,	$sp,	4
+		jr	$ra
 	# }}}
-
-	li	$a0,	'\n'	# Store a new line character into $a0
-	li	$v0,	11	# Load immediate to print character
-	syscall
-
-	addi	$sp,	$sp,	4
-	jr	$ra
 # }}}
+
+get_int: #  {{{
+	li	$v0,	5	# Load Immediate for accepting integers
+	syscall
+	jr	$ra	# Return back to where it was called
+#  }}}
 
 exit: # {{{
 	li	$v0,	10
