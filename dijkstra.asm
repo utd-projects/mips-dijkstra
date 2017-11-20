@@ -13,11 +13,6 @@ adj_matrix:	.word	0,3,5,9,0,0,
 
 distance:		.word	2147483647:6 # Initilize size 6 array where every element equals INT_MAX
 is_shortest:	.word	0:6 # Initilze size 6 array where every element is false
-<<<<<<< HEAD
-verticies:	.word	6
-path:           .word   0:6
-=======
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 
 vertices:		.word	6
 vertices_msg:	.asciiz	"vertices:\nA B C D E F"
@@ -122,18 +117,13 @@ dijkstra: #  {{{
 			addi	$sp,	$sp,	4
 			lw	$ra,	($sp)
 			addi	$sp,	$sp,	4
-<<<<<<< HEAD
-			move    $s5,    $a0
-		# Update is_shortest for the new shortest vertex  }}}
-=======
 		# }}}
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 
 		# Optimize Shortest Path {{{
 			addi	$sp,	$sp,	-4	# Put $ra into stack
 			sw	$ra,	($sp)
 
-			move    $a0,    $s5	# $a0 = adj_matrix
+			# $a0 = adj_matrix
 			move	$a1,	$s0	# $a1 = distance array
 			move	$a2,	$s1	# $a2 = is_shortest array
 			# move	$a3,	$s2	# $a3 = current shortest vertex
@@ -142,23 +132,7 @@ dijkstra: #  {{{
 
 			lw	$ra,	($sp)
 			addi	$sp,	$sp,	4
-<<<<<<< HEAD
-		# Optimize Shortest Path }}}
-		
-		# Print Path Array {{{
-			addi	$sp,	$sp,	-4	# Put $ra into stack
-			sw	$ra,	($sp)
-
-			# $a0 = adj_matrix
-			move	$a0,	$s5	# $a1 = distance array
-			jal	print_path
-
-			lw	$ra,	($sp)
-			addi	$sp,	$sp,	4
-		# Print Path Array }}}
-=======
 		# }}}
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 
 		addi	$s3,	$s3,	1
 		j	dijkstra_main_loop
@@ -178,10 +152,6 @@ dijkstra: #  {{{
 	li	$v0,	11
 	syscall
 
-<<<<<<< HEAD
-		# Print Distance Array {{{
-		move    $a0,    $s5
-=======
 	move	$a0,	$s0	# $a0 = distance array
 	jal	print_array
 
@@ -199,16 +169,11 @@ dijkstra: #  {{{
 		bge	$s3,	$s4	end_path_print_loop
 
 		# Print Path {{{
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 		addi	$sp,	$sp,	-4	# Put $ra into stack
 		sw	$ra,	($sp)
 
-<<<<<<< HEAD
-		move	$a0,	$s0
-=======
 		move	$a1,	$s5	# $a0 = path array
 		move	$a2,	$s3	# $a1 = $s3 = End vertex
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 		jal	print_path
 
 		lw	$ra,	($sp)
@@ -233,13 +198,7 @@ init_starting_vertex:	# Sets the starting vertex to have a distance 0 #  {{{
 	jr	$ra
 #  }}}
 
-<<<<<<< HEAD
-set_minimum_distance:	# Find next shortest vertex
-#  {{{
-	move    $t7,    $a0
-=======
 set_minimum_distance:	# Find next shortest vertex #  {{{
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 	li	$t0,	2147483647 # $t0 = min_value (initilized to INT_MAX)
 	li	$v0,	0	# $v0 = min_index
 
@@ -254,17 +213,10 @@ set_minimum_distance_loop:
 		bnez	$t3,	increment_set_minimum_distance_loop # Skip if is_shortest[i] = true
 
 		sll	$t2,	$t1,	2	# Anchor pointer to element we want
-<<<<<<< HEAD
-		add	$t2,	$t7,	$t2	# Set $t2 to address of distance[i]
-		lw	$t3,	0($t2)	# $t3 = distance[i]
-		sle	$t4,	$t3,	$t0 # Set $t4 to 1 if distance[i] <= $t0
-		beq	$t4,	$zero,	increment_set_minimum_distance_loop # Skip if $t4 is false
-=======
 		add	$t2,	$a0,	$t2	# Set $t2 to address of distance[i]
 		lw	$t3,	0($t2)		# $t3 = distance[i]
 		sle	$t4,	$t3,	$t0	# Set $t4 to 1 if distance[i] <= $t0(min_value)
 		bgt	$t3,	$t0,	increment_set_minimum_distance_loop # Skip if distance[i] > $t0(min_value)
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 	#  }}}
 	move	$t0,	$t3 # min_value = *(distance + i);
 	move	$v0,	$t1 # min_index = i;
@@ -289,33 +241,16 @@ update_is_shortest: # Update is_shortest array for new shortest vertex #  {{{
 	jr	$ra
 #  }}}
 
-<<<<<<< HEAD
-# Input:
-# $a0: graph
-# $a1: distance
-# $a2: is_shortest array
-# $a3: checker
-optimize_distance:	# Update distance array values
-#  {{{
-	li	$t0,	0	# int j = $t0 = 0
-	move	$t1,	$s4	# $s1 = $s4 = verticies
-	move    $t7,    $a0
-=======
 optimize_distance:	# Update distance array values #  {{{
 	li	$t0,	0	# int j = $t0 = 0
 	move	$t1,	$s4	# $s1 = $s4 = vertices
 
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 optimize_distance_loop:
 	bge	$t0,	$t1,	end_optimize_distance
-	la      $t8,    path
 
 	# Find Shorter Distance {{{
 		sll	$t2,	$t0,	2	# Anchor pointer to element we want
-		
 		add	$t2,	$a2,	$t2	# Set $t2 to address of is_shortest[j]
-		
-		
 		lw	$t3,	0($t2)	# $t3 = is_shortest[j]
 		bnez	$t3	increment_optimize_distance # Skip if $t3 is true
 
@@ -328,13 +263,8 @@ optimize_distance_loop:
 		mul	$t4,	$t1,	$s2 # Anchor $t2 = vertices*checker + j
 		add	$t4,	$t4,	$t0
 		sll	$t2,	$t4,	2
-<<<<<<< HEAD
-		add	$t2,	$t7,	$t2
-		lw	$t4,	0($t2)		# $t4 = *(graph + (verticies*checker + j))
-=======
 		add	$t2,	$a0,	$t2
 		lw	$t4,	0($t2)		# $t4 = *(graph + (vertices*checker + j))
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 		beqz	$t4,	increment_optimize_distance # Skip if $t4 == 0
 
 		add	$t5,	$t4,	$t3 # $t6 = distance[checker] + graph[vertices*checker +j]
@@ -359,38 +289,9 @@ increment_optimize_distance:
 	j	optimize_distance_loop
 
 end_optimize_distance:
-	sw      $t8,    path
 	jr	$ra
 #  }}}
 
-<<<<<<< HEAD
-print_array:
-#  {{{
-	li	$t0,	0	# i = $t0 = 0
-	lw	$t1,	verticies
-	move    $t7,    $a0
-loop_print_array:
-	bge	$t0,	$t1,	end_print_array # Check if we are are done with looping
-	sll	$t2,	$t0,	2	# $t0 is pointer to element we want
-	add	$t2,	$t7,	$t2	# Get pointer to element we want
-
-	addi	$sp,	$sp,	-4
-	sw	$t7,	($sp)
-	
-	addi    $a0,    $t0,    65
-	li      $v0,    11
-	syscall
-	li      $a0,    ':'
-	li      $v0,    11
-	syscall
-			
-	lw	$a0,	0($t2)	# $t1 = distance[starting vertex]
-	li	$v0,	1
-	syscall
-	li	$a0,	' '	
-	li	$v0,	11	# List immediate to print a character
-	syscall
-=======
 # Print Functions {{{
 	print_string: #  {{{
 		li	$v0,	4	# Load Immediate for reading strings
@@ -409,7 +310,6 @@ loop_print_array:
 		move	$t1,	$s4	# $t1 = vertices
 
 		loop_print_array: #  {{{
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 
 		bge	$t0,	$t1,	end_print_array # Check if we are are done with looping
 		sll	$t2,	$t0,	2	# $t0 is pointer to element we want
@@ -507,30 +407,7 @@ get_int: #  {{{
 	jr	$ra	# Return back to where it was called
 #  }}}
 
-<<<<<<< HEAD
-print_path:
-# {{{
-	lw      $t8,    path
-	li      $t0,    0
-	li      $t3,    6
-loop_print_path:
-        bge     $t0,    $t3,    end_print_path
-        sll     $t2,    $t0,    2
-        add     $t2,    $t8,    $t2
-        lw      $a0,    0($t2)
-        li      $v0,    1
-        syscall
-        addi    $t0,    $t0,    1
-        j       loop_print_path
-end_print_path:
-        jr      $ra
-# }}}
-
-exit:
-# {{{
-=======
 exit: # {{{
->>>>>>> f36363b50791a08cd9150d5c361354c454951500
 	li	$v0,	10
 	syscall
 # }}}
