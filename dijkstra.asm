@@ -1,7 +1,16 @@
-# Pratik Bhusal, Caleb Fung
-# November 11, 2017
-# CS 3340.003
-# Dr. Mazidi
+#################################################################################################
+##                  MIP implementation of Dijkstra's shortest path algorithm                   ##
+##                                                                                             ##
+##    A straight-forward implementation of Dijkstra's shortest path algorithm using an         ##
+##    adjacency matrix for 6 vertices in a graph.                                              ##
+##    Resources and source code can be found at https://github.com/PratikBhusal/mips-dijkstra. ##
+##                                                                                             ##
+##    Authors:   Pratik Bhusal, Caleb Fung                                                     ##
+##    Date:      November 20, 2017                                                             ##
+##    Course:    CS 3340.003                                                                   ##
+##    Professor: Dr. Karen Mazidi                                                              ##
+##                                                                                             ##
+#################################################################################################
 
 	.data # {{{
 adj_matrix:	.word	0,3,5,9,0,0,
