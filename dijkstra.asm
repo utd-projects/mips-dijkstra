@@ -34,6 +34,8 @@ print_vertices_options:	.asciiz "A=0 B=1 C=2 D=3 E=4 F=5\n"
 in_starting_vertex:	.asciiz "What is the starting vertex (0-5)? "
 starting_vertex:	.word	0 # A=0, B=1, C=2, D=3, E=4, F=5
 
+error_msg:	.asciiz	"Sorry, you did not enter a valid input."
+
 # }}}
 
 	.text # {{{
@@ -56,6 +58,11 @@ main: # {{{
 		# Get Starting Vertex }}}
 	# Ask user for starting vertex }}}
 
+	# Force Quit if invalid input {{{
+		bgt     $v0, 5, error       # Display an error message if starting_vertex > 5
+		blt     $v0, 0, error       # Display an error message if starting_vertex < 0
+	# Force Quit if invalid input }}}
+
 	# Find Shortest Path from starting vertex to every other vertex {{{
 		la	$a0,	adj_matrix
 		lw	$a1,	vertices
@@ -66,6 +73,14 @@ main: # {{{
 	# End Program {{{
 		j exit
 	# End Program }}}
+
+	# Error Exit {{{
+	error:
+		la	$a0,	error_msg
+		jal	print_string
+
+		j	exit
+	# Error Exit }}}
 # }}}
 
 dijkstra: #  {{{
